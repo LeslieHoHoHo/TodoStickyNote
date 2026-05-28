@@ -1,5 +1,3 @@
 node_modules/
-dist/win-unpacked/
-dist/builder-*.yml
-dist/*.blockmap
+dist/
 *.7z
