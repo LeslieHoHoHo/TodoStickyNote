@@ -1,0 +1,43 @@
+{
+  "name": "todo-sticky-note",
+  "version": "1.0.4",
+  "description": "Windows 桌面待办浮窗",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.todo.stickynote",
+    "productName": "待办便贴纸",
+    "artifactName": "TodoStickyNote-Setup-${version}.${ext}",
+    "npmRebuild": false,
+    "win": {
+      "target": "nsis",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "待办便贴纸"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "dependencies": {
+    "electron-store": "^6.0.1"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^26.8.1"
+  }
+}

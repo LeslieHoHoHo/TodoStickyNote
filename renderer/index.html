@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>待办浮窗</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 自定义标题栏 -->
+  <div class="title-bar">
+    <span class="title-text">📋 待办便贴</span>
+    <button class="pin-btn active" id="btn-pin" title="窗口置顶">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+        <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
+      </svg>
+    </button>
+    <div class="title-buttons">
+      <button class="title-btn btn-minimize" id="btn-minimize" title="最小化">─</button>
+      <button class="title-btn btn-close" id="btn-close" title="关闭">✕</button>
+    </div>
+  </div>
+
+  <!-- 输入栏 -->
+  <div class="todo-input-bar">
+    <input type="text" id="todo-input" class="todo-input" placeholder="输入待办内容，按回车添加..." autocomplete="off" />
+    <button class="import-file-btn" id="btn-import-file" title="从 .txt 文件导入待办">
+      📁
+    </button>
+  </div>
+
+  <!-- Tab 栏 -->
+  <div class="tab-bar" id="tab-bar">
+    <div class="tab-item active" data-tab="pending">
+      <span class="tab-label">待办</span>
+    </div>
+    <div class="tab-item" data-tab="completed">
+      <span class="tab-label">已完成</span>
+      <span class="tab-badge" id="completed-badge" style="display:none;">0</span>
+    </div>
+    <div class="tab-indicator" id="tab-indicator"></div>
+  </div>
+
+  <!-- 列表区域 -->
+  <div class="list-container" id="list-container">
+    <!-- 待办列表 -->
+    <div class="todo-list active" id="pending-list">
+      <!-- 动态渲染 -->
+    </div>
+
+    <!-- 已完成列表 -->
+    <div class="todo-list" id="completed-list">
+      <!-- 动态渲染 -->
+    </div>
+
+    <!-- 空状态 -->
+    <div class="empty-state" id="empty-state">
+      <span class="empty-icon" id="empty-icon">📝</span>
+      <span class="empty-text" id="empty-text">暂无待办事项</span>
+    </div>
+  </div>
+
+  <!-- 底部设置区域 -->
+  <div class="settings-area">
+    <div class="settings-toggle" id="settings-toggle">
+      <span>⚙ 设置</span>
+      <span class="settings-arrow" id="settings-arrow">▸</span>
+    </div>
+    <div class="settings-content" id="settings-content">
+      <div class="setting-item">
+        <span class="setting-label">开机自启</span>
+        <label class="switch">
+          <input type="checkbox" id="auto-launch-toggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">窗口置顶</span>
+        <label class="switch">
+          <input type="checkbox" id="always-on-top-toggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting-item setting-item-opacity">
+        <span class="setting-label">窗口透明度</span>
+        <div class="opacity-control">
+          <input type="range" id="opacity-slider" min="0.3" max="1.0" step="0.05" value="0.75" />
+          <span class="opacity-value" id="opacity-value">75%</span>
+        </div>
+      </div>
+      <div class="setting-item setting-item-font-size">
+        <span class="setting-label">字体大小</span>
+        <div class="font-size-control">
+          <input type="range" id="font-size-slider" min="8" max="20" step="1" value="14" />
+          <span class="font-size-value" id="font-size-value">14px</span>
+        </div>
+      </div>
+      <div class="setting-item setting-item-theme">
+        <span class="setting-label">主题模式</span>
+        <div class="theme-buttons" id="theme-buttons">
+          <button class="theme-btn active" data-theme="system">跟随系统</button>
+          <button class="theme-btn" data-theme="light">浅色</button>
+          <button class="theme-btn" data-theme="dark">深色</button>
+        </div>
+      </div>
+      <div class="setting-item setting-item-sort">
+        <span class="setting-label">待办排序</span>
+        <select id="sort-by-select" class="setting-select">
+          <option value="createdAt">按创建时间</option>
+          <option value="dueDate">按截止时间</option>
+        </select>
+      </div>
+      <div class="setting-item setting-item-auto-delete">
+        <span class="setting-label">自动清理已完成</span>
+        <select id="auto-delete-select" class="setting-select">
+          <option value="0">不自动删除</option>
+          <option value="7">7天后</option>
+          <option value="30">30天后</option>
+          <option value="90">90天后</option>
+          <option value="180">180天后</option>
+        </select>
+      </div>
+      <div class="setting-item setting-item-io">
+        <span class="setting-label">数据</span>
+        <div class="io-buttons">
+          <button class="io-btn" id="btn-export" title="导出为 .txt 文件">导出数据</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态对话框：批量添加待办 -->
+  <div class="modal-overlay hidden" id="import-modal-overlay">
+    <div class="import-modal">
+      <div class="modal-header">
+        <span class="modal-title">批量添加待办</span>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="import-textarea" class="import-textarea" placeholder="每行输入一条待办事项..." rows="6"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-secondary" id="btn-import-from-file">从txt文件导入</button>
+        <button class="modal-btn modal-btn-primary" id="btn-confirm-import">确认添加</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

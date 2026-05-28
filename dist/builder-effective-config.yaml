@@ -1,0 +1,23 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.todo.stickynote
+productName: 待办便贴纸
+artifactName: TodoStickyNote-Setup-${version}.${ext}
+npmRebuild: false
+win:
+  target: nsis
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: 待办便贴纸
+files:
+  - filter:
+      - main.js
+      - preload.js
+      - renderer/**/*
+      - assets/**/*
+      - node_modules/**/*
+electronVersion: 28.3.3
