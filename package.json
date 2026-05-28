@@ -1,6 +1,6 @@
 {
   "name": "todo-sticky-note",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Windows 桌面待办浮窗",
   "main": "main.js",
   "scripts": {

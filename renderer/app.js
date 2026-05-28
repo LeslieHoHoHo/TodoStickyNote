@@ -20,6 +20,7 @@ const fontSizeValue = document.getElementById('font-size-value');
 const tabBar = document.getElementById('tab-bar');
 const tabIndicator = document.getElementById('tab-indicator');
 const completedBadge = document.getElementById('completed-badge');
+const pendingBadge = document.getElementById('pending-badge');
 const btnExport = document.getElementById('btn-export');
 const autoDeleteSelect = document.getElementById('auto-delete-select');
 const sortBySelect = document.getElementById('sort-by-select');
@@ -374,14 +375,22 @@ function updateTabIndicator() {
   tabIndicator.style.width = tabRect.width + 'px';
 }
 
-// ===== 更新已完成角标 =====
+// ===== 更新角标 =====
 function updateBadge() {
-  const count = todos.filter(t => t.completed).length;
-  if (count > 0) {
-    completedBadge.textContent = count;
+  const completedCount = todos.filter(t => t.completed).length;
+  if (completedCount > 0) {
+    completedBadge.textContent = completedCount;
     completedBadge.style.display = 'inline-flex';
   } else {
     completedBadge.style.display = 'none';
+  }
+
+  const pendingCount = todos.filter(t => !t.completed).length;
+  if (pendingCount > 0) {
+    pendingBadge.textContent = pendingCount;
+    pendingBadge.style.display = 'inline-flex';
+  } else {
+    pendingBadge.style.display = 'none';
   }
 }
 
