@@ -24,6 +24,7 @@ const pendingBadge = document.getElementById('pending-badge');
 const btnExport = document.getElementById('btn-export');
 const autoDeleteSelect = document.getElementById('auto-delete-select');
 const sortBySelect = document.getElementById('sort-by-select');
+const languageSelect = document.getElementById('language-select');
 const importModalOverlay = document.getElementById('import-modal-overlay');
 const importTextarea = document.getElementById('import-textarea');
 const btnImportFromFile = document.getElementById('btn-import-from-file');
@@ -33,7 +34,121 @@ const pinBtn = document.getElementById('btn-pin');
 
 // ===== 数据 =====
 let todos = [];
-let settings = { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, sortBy: 'createdAt' };
+let settings = { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, sortBy: 'createdAt', language: 'system' };
+
+// ===== i18n =====
+const locales = { 'zh-CN': zhCN, 'en': en };
+let currentLocale = zhCN; // 当前语言包引用
+
+/**
+ * 获取当前语言的翻译文本
+ * @param {string} key - 语言键
+ * @param {object} params - 替换参数，如 { days: 7 }
+ */
+function t(key, params) {
+  let text = currentLocale[key] || zhCN[key] || key;
+  if (params) {
+    Object.keys(params).forEach(k => {
+      text = text.replace(`{${k}}`, params[k]);
+    });
+  }
+  return text;
+}
+
+/**
+ * 解析实际语言代码：'system' 时根据浏览器语言判断
+ */
+function resolveLanguage(lang) {
+  if (lang === 'system') {
+    const browserLang = navigator.language;
+    if (browserLang.startsWith('zh')) return 'zh-CN';
+    return 'en';
+  }
+  return lang;
+}
+
+/**
+ * 应用语言到界面
+ */
+function applyLocale() {
+  const lang = resolveLanguage(settings.language || 'system');
+  currentLocale = locales[lang] || zhCN;
+
+  // 更新 html lang 属性
+  document.documentElement.lang = lang;
+
+  // 标题栏
+  document.querySelector('.title-text').textContent = t('title');
+  pinBtn.title = t('pinTooltip');
+  btnMinimize.title = t('minimizeTooltip');
+  btnClose.title = t('closeTooltip');
+
+  // 输入栏
+  todoInput.placeholder = t('inputPlaceholder');
+  btnImportFile.title = t('importFileTooltip');
+
+  // Tab 标签
+  document.querySelector('[data-tab="pending"] .tab-label').textContent = t('tabPending');
+  document.querySelector('[data-tab="completed"] .tab-label').textContent = t('tabCompleted');
+
+  // 空状态（如果当前正在显示）
+  updateEmptyState();
+
+  // 设置面板
+  document.querySelector('#settings-toggle span:first-child').textContent = t('settingsToggle');
+
+  // 设置项标签 - 使用 data-i18n 属性
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+
+  // 主题按钮
+  document.querySelector('[data-theme="system"]').textContent = t('themeSystem');
+  document.querySelector('[data-theme="light"]').textContent = t('themeLight');
+  document.querySelector('[data-theme="dark"]').textContent = t('themeDark');
+
+  // 排序下拉框
+  sortBySelect.options[0].textContent = t('sortByCreatedAt');
+  sortBySelect.options[1].textContent = t('sortByDueDate');
+
+  // 自动清理下拉框
+  autoDeleteSelect.options[0].textContent = t('autoDeleteNever');
+  autoDeleteSelect.options[1].textContent = t('autoDeleteDays', { days: 7 });
+  autoDeleteSelect.options[2].textContent = t('autoDeleteDays', { days: 30 });
+  autoDeleteSelect.options[3].textContent = t('autoDeleteDays', { days: 90 });
+  autoDeleteSelect.options[4].textContent = t('autoDeleteDays', { days: 180 });
+
+  // 语言下拉框
+  languageSelect.options[0].textContent = t('languageSystem');
+  languageSelect.options[1].textContent = t('languageZhCN');
+  languageSelect.options[2].textContent = t('languageEn');
+
+  // 导出按钮
+  btnExport.textContent = t('exportData');
+
+  // 模态框
+  document.querySelector('.modal-title').textContent = t('modalTitle');
+  importTextarea.placeholder = t('modalPlaceholder');
+  btnImportFromFile.textContent = t('importFromFile');
+  btnConfirmImport.textContent = t('confirmAdd');
+
+  // 通知主进程更新托盘菜单和对话框语言
+  window.electronAPI.updateLocale({
+    trayTooltip: t('trayTooltip'),
+    trayShow: t('trayShow'),
+    trayQuit: t('trayQuit'),
+    importDialogTitle: t('importDialogTitle'),
+    textFile: t('textFile'),
+    exportDialogTitle: t('exportDialogTitle'),
+    exportDefaultName: t('exportDefaultName')
+  });
+
+  // 重新渲染列表（待办条目中的文本也需要更新）
+  renderList();
+}
 let currentTab = 'pending'; // 当前激活的 Tab
 
 // ===== 工具函数 =====
@@ -82,7 +197,7 @@ function getDueDateClass(dueDateStr) {
 // ===== 初始化 =====
 async function init() {
   todos = await window.electronAPI.getTodos() || [];
-  settings = await window.electronAPI.getSettings() || { autoLaunch: false, alwaysOnTop: true };
+  settings = await window.electronAPI.getSettings() || { autoLaunch: false, alwaysOnTop: true, language: 'system' };
 
   autoLaunchToggle.checked = settings.autoLaunch;
   alwaysOnTopToggle.checked = settings.alwaysOnTop;
@@ -108,6 +223,11 @@ async function init() {
   // 初始化排序方式
   const sortBy = settings.sortBy || 'createdAt';
   sortBySelect.value = sortBy;
+
+  // 初始化语言
+  const language = settings.language || 'system';
+  languageSelect.value = language;
+  applyLocale();
 
   // 初始化自动清理天数
   const autoDeleteDays = settings.autoDeleteDays !== undefined ? settings.autoDeleteDays : 0;
@@ -194,6 +314,13 @@ function bindEvents() {
     settings.sortBy = sortBySelect.value;
     await window.electronAPI.saveSettings(settings);
     renderList();
+  });
+
+  // 语言下拉框
+  languageSelect.addEventListener('change', async () => {
+    settings.language = languageSelect.value;
+    await window.electronAPI.saveSettings(settings);
+    applyLocale();
   });
 
   // 自动清理下拉框
@@ -402,11 +529,11 @@ function updateEmptyState() {
   if (currentTab === 'pending' && pending.length === 0) {
     emptyState.classList.remove('hidden');
     emptyIcon.textContent = '📝';
-    emptyText.textContent = '暂无待办事项';
+    emptyText.textContent = t('emptyPending');
   } else if (currentTab === 'completed' && completed.length === 0) {
     emptyState.classList.remove('hidden');
     emptyIcon.textContent = '✅';
-    emptyText.textContent = '暂无已完成事项';
+    emptyText.textContent = t('emptyCompleted');
   } else {
     emptyState.classList.add('hidden');
   }
@@ -537,7 +664,7 @@ function createPendingElement(todo) {
   if (todo.dueDate) {
     const dueSpan = document.createElement('span');
     dueSpan.className = 'todo-due ' + getDueDateClass(todo.dueDate);
-    dueSpan.textContent = '截止 ' + formatDate(todo.dueDate);
+    dueSpan.textContent = t('duePrefix') + formatDate(todo.dueDate);
 
     // 点击截止时间 → 进入日期编辑模式
     dueSpan.addEventListener('click', (e) => {
@@ -587,7 +714,7 @@ function createPendingElement(todo) {
     // 没有截止时间时显示“添加日期”按钮
     const addDateBtn = document.createElement('button');
     addDateBtn.className = 'todo-add-date';
-    addDateBtn.textContent = '+ 添加日期';
+    addDateBtn.textContent = t('addDate');
     addDateBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const dateInput = document.createElement('input');
@@ -670,7 +797,7 @@ function createCompletedElement(todo) {
   if (todo.completedAt) {
     const timeSpan = document.createElement('span');
     timeSpan.className = 'todo-completed-time';
-    timeSpan.textContent = '完成于 ' + formatDateTime(todo.completedAt);
+    timeSpan.textContent = t('completedAt') + formatDateTime(todo.completedAt);
     meta.appendChild(timeSpan);
   }
 
@@ -680,7 +807,7 @@ function createCompletedElement(todo) {
   const restoreBtn = document.createElement('button');
   restoreBtn.className = 'todo-restore';
   restoreBtn.textContent = '↩';
-  restoreBtn.title = '恢复为待办';
+  restoreBtn.title = t('restoreTooltip');
   restoreBtn.addEventListener('click', () => restoreTodo(todo.id));
 
   // 删除按钮
@@ -730,14 +857,14 @@ async function exportTodos() {
   let text = '';
 
   // 待办部分
-  text += '=== 待办 ===\n';
+  text += `=== ${t('exportPending')} ===\n`;
   if (pending.length === 0) {
-    text += '（无）\n';
+    text += t('exportNone') + '\n';
   } else {
     pending.forEach((todo, i) => {
-      let line = `${i + 1}、${todo.content} [创建: ${formatDateTime(todo.createdAt)}]`;
+      let line = `${i + 1}. ${todo.content} [${t('exportCreatedAt')}: ${formatDateTime(todo.createdAt)}]`;
       if (todo.dueDate) {
-        line += ` [截止: ${formatDate(todo.dueDate)}]`;
+        line += ` [${t('exportDueDate')}: ${formatDate(todo.dueDate)}]`;
       }
       text += line + '\n';
     });
@@ -746,14 +873,14 @@ async function exportTodos() {
   text += '\n';
 
   // 已完成部分
-  text += '=== 已完成 ===\n';
+  text += `=== ${t('exportCompleted')} ===\n`;
   if (completed.length === 0) {
-    text += '（无）\n';
+    text += t('exportNone') + '\n';
   } else {
     completed.forEach((todo, i) => {
-      let line = `${i + 1}、${todo.content}`;
+      let line = `${i + 1}. ${todo.content}`;
       if (todo.completedAt) {
-        line += ` [完成: ${formatDateTime(todo.completedAt)}]`;
+        line += ` [${t('exportCompletedAt')}: ${formatDateTime(todo.completedAt)}]`;
       }
       text += line + '\n';
     });

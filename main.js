@@ -12,7 +12,8 @@ const store = new ElectronStore({
       opacity: 0.75,
       theme: 'system',
       fontSize: 14,
-      autoDeleteDays: 30
+      autoDeleteDays: 30,
+      language: 'system'
     },
     windowBounds: { x: undefined, y: undefined, width: 350, height: 500 }
   }
@@ -20,6 +21,15 @@ const store = new ElectronStore({
 
 let mainWindow = null;
 let tray = null;
+let localeStrings = {
+  trayTooltip: '待办便贴纸',
+  trayShow: '显示',
+  trayQuit: '退出',
+  importDialogTitle: '导入待办',
+  textFile: '文本文件',
+  exportDialogTitle: '导出待办数据',
+  exportDefaultName: '待办数据'
+};
 
 function createWindow() {
   const bounds = store.get('windowBounds');
@@ -75,11 +85,11 @@ function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'tray-icon.ico');
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
-  tray.setToolTip('待办便贴纸');
+  tray.setToolTip(localeStrings.trayTooltip);
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: '显示',
+      label: localeStrings.trayShow,
       click: () => {
         if (mainWindow) {
           mainWindow.show();
@@ -89,7 +99,7 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: '退出',
+      label: localeStrings.trayQuit,
       click: () => {
         if (mainWindow) {
           mainWindow.removeAllListeners('close');
@@ -140,7 +150,7 @@ ipcMain.handle('save-todos', (event, todos) => {
 
 // IPC: 获取设置
 ipcMain.handle('get-settings', () => {
-  return store.get('settings', { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0 });
+  return store.get('settings', { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, language: 'system' });
 });
 
 // IPC: 保存设置
@@ -187,11 +197,44 @@ ipcMain.handle('set-opacity', (event, value) => {
   return true;
 });
 
+// IPC: 更新语言（渲染进程通知主进程更新托盘菜单等）
+ipcMain.handle('update-locale', (event, strings) => {
+  localeStrings = { ...localeStrings, ...strings };
+  // 重建托盘菜单
+  if (tray) {
+    tray.setToolTip(localeStrings.trayTooltip);
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: localeStrings.trayShow,
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: localeStrings.trayQuit,
+        click: () => {
+          if (mainWindow) {
+            mainWindow.removeAllListeners('close');
+            mainWindow.close();
+          }
+          app.quit();
+        }
+      }
+    ]);
+    tray.setContextMenu(contextMenu);
+  }
+  return true;
+});
+
 // IPC: 导入文件
 ipcMain.handle('import-file', async () => {
   const result = dialog.showOpenDialogSync(mainWindow, {
-    title: '导入待办',
-    filters: [{ name: '文本文件', extensions: ['txt'] }],
+    title: localeStrings.importDialogTitle,
+    filters: [{ name: localeStrings.textFile, extensions: ['txt'] }],
     properties: ['openFile']
   });
   if (!result || result.length === 0) return null;
@@ -206,9 +249,9 @@ ipcMain.handle('import-file', async () => {
 // IPC: 导出文件
 ipcMain.handle('export-file', async (event, content) => {
   const result = dialog.showSaveDialogSync(mainWindow, {
-    title: '导出待办数据',
-    defaultPath: '待办数据.txt',
-    filters: [{ name: '文本文件', extensions: ['txt'] }]
+    title: localeStrings.exportDialogTitle,
+    defaultPath: localeStrings.exportDefaultName + '-' + (function() { const d = new Date(); const pad = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + '_' + pad(d.getHours()) + '-' + pad(d.getMinutes()) + '-' + pad(d.getSeconds()); }()) + '.txt',
+    filters: [{ name: localeStrings.textFile, extensions: ['txt'] }]
   });
   if (!result) return false;
   try {

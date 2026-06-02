@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeWindow: () => ipcRenderer.send('window-close'),
   setOpacity: (value) => ipcRenderer.invoke('set-opacity', value),
   importFile: () => ipcRenderer.invoke('import-file'),
-  exportFile: (content) => ipcRenderer.invoke('export-file', content)
+  exportFile: (content) => ipcRenderer.invoke('export-file', content),
+  updateLocale: (strings) => ipcRenderer.invoke('update-locale', strings)
 });

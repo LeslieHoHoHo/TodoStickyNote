@@ -982,6 +982,13 @@ body.dark-theme .todo-due.due-urgent {
   gap: 0.43em;
 }
 
+/* ===== 语言选择下拉框 ===== */
+.setting-item-language {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.43em;
+}
+
 /* ===== 自动清理下拉框 ===== */
 .setting-item-auto-delete {
   flex-direction: column;
