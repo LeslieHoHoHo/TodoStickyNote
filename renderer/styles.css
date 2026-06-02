@@ -284,10 +284,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.14em;
-  height: 1.14em;
+  min-width: 1.43em;
+  height: 1.43em;
   padding: 0 0.29em;
-  font-size: 0.71em;
+  font-size: 0.86em;
   font-weight: 600;
   color: #fff;
   background: var(--accent-color);

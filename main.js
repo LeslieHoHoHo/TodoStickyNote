@@ -23,6 +23,8 @@ let tray = null;
 
 function createWindow() {
   const bounds = store.get('windowBounds');
+  const settings = store.get('settings');
+  const alwaysOnTop = settings.alwaysOnTop !== undefined ? settings.alwaysOnTop : true;
 
   mainWindow = new BrowserWindow({
     width: bounds.width || 350,
@@ -33,7 +35,7 @@ function createWindow() {
     minHeight: 300,
     frame: false,
     transparent: true,
-    alwaysOnTop: true,
+    alwaysOnTop: alwaysOnTop,
     resizable: true,
     skipTaskbar: true,
     webPreferences: {
@@ -45,8 +47,10 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
-  // 使用 screen-saver 级别确保窗口真正置顶于所有应用之上
-  mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  // 使用 screen-saver 级别确保窗口置顶于所有应用之上（仅在开启置顶时生效）
+  if (alwaysOnTop) {
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  }
 
   mainWindow.on('resize', () => {
     const { width, height } = mainWindow.getBounds();
