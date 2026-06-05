@@ -1,5 +1,7 @@
 # 📋 待办便贴纸 TodoStickyNote
 
+[English](README_EN.md) | 中文
+
 一款 Windows 桌面待办浮窗软件，基于 Electron 构建，始终置顶于桌面，随时记录待办事项。
 
 ## 功能特性

@@ -1,5 +1,7 @@
 # 📋 TodoStickyNote
 
+English | [中文](README.md)
+
 A Windows desktop sticky note app for managing todos, built with Electron. Always stays on top of your desktop so you can capture tasks at any time.
 
 ## Features
