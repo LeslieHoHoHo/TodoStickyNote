@@ -36,11 +36,22 @@ function createWindow() {
   const settings = store.get('settings');
   const alwaysOnTop = settings.alwaysOnTop !== undefined ? settings.alwaysOnTop : true;
 
+  // 安全检查：确保窗口位置在屏幕可见范围内
+  const { screen } = require('electron');
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+  const winWidth = bounds.width || 350;
+  const winHeight = bounds.height || 500;
+  let winX = bounds.x;
+  let winY = bounds.y;
+  if (winX !== undefined && (winX < -100 || winX > screenWidth - 100)) winX = undefined;
+  if (winY !== undefined && (winY < -100 || winY > screenHeight - 100)) winY = undefined;
+
   mainWindow = new BrowserWindow({
-    width: bounds.width || 350,
-    height: bounds.height || 500,
-    x: bounds.x,
-    y: bounds.y,
+    width: winWidth,
+    height: winHeight,
+    x: winX,
+    y: winY,
     minWidth: 280,
     minHeight: 300,
     frame: false,

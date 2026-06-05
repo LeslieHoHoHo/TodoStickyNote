@@ -945,3 +945,11 @@ function bindThemeButtons() {
 // ===== 启动 =====
 init();
 bindThemeButtons();
+
+// 每小时刷新待办列表，更新截止时间颜色
+setInterval(() => renderPendingList(), 3600000);
+
+// 窗口从隐藏恢复时也刷新一次
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) renderPendingList();
+});
