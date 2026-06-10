@@ -947,6 +947,20 @@ body.dark-theme .todo-due.due-urgent {
   gap: 0.43em;
 }
 
+/* ===== 关于 ===== */
+.setting-item-about {
+  justify-content: center;
+  padding-top: 0.86em;
+  border-top: 1px solid var(--border-color);
+  margin-top: 0.43em;
+}
+
+.about-version {
+  font-size: 0.71em;
+  color: var(--text-tertiary, #999);
+  text-align: center;
+}
+
 .io-buttons {
   display: flex;
   gap: 0.57em;
@@ -977,6 +991,12 @@ body.dark-theme .todo-due.due-urgent {
 
 /* ===== 待办排序下拉框 ===== */
 .setting-item-sort {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.43em;
+}
+
+.setting-item-default-due-date {
   flex-direction: column;
   align-items: stretch;
   gap: 0.43em;

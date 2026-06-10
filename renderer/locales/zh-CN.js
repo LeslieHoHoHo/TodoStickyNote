@@ -36,6 +36,11 @@ const zhCN = {
   sortBy: '待办排序',
   sortByCreatedAt: '按创建时间',
   sortByDueDate: '按截止时间',
+  defaultDueDate: '默认截止日期',
+  defaultDueDateNone: '无截止日期',
+  defaultDueDateToday: '当天',
+  defaultDueDateWeek: '一周后',
+  defaultDueDateMonth: '一个月后',
   autoDelete: '自动清理已完成',
   autoDeleteNever: '不自动删除',
   autoDeleteDays: '{days}天后',
@@ -67,5 +72,8 @@ const zhCN = {
   importDialogTitle: '导入待办',
   textFile: '文本文件',
   exportDialogTitle: '导出待办数据',
-  exportDefaultName: '待办数据'
+  exportDefaultName: '待办数据',
+
+  // 关于
+  aboutVersion: 'TodoStickyNote v{version}'
 };

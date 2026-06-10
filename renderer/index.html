@@ -119,6 +119,15 @@
           <option value="dueDate">按截止时间</option>
         </select>
       </div>
+      <div class="setting-item setting-item-default-due-date">
+        <span class="setting-label" data-i18n="defaultDueDate">默认截止日期</span>
+        <select id="default-due-date-select" class="setting-select">
+          <option value="none">无截止日期</option>
+          <option value="today">当天</option>
+          <option value="week">一周后</option>
+          <option value="month">一个月后</option>
+        </select>
+      </div>
       <div class="setting-item setting-item-auto-delete">
         <span class="setting-label" data-i18n="autoDelete">自动清理已完成</span>
         <select id="auto-delete-select" class="setting-select">
@@ -134,6 +143,9 @@
         <div class="io-buttons">
           <button class="io-btn" id="btn-export" data-i18n-title="exportFileTooltip" title="导出为 .txt 文件">导出数据</button>
         </div>
+      </div>
+      <div class="setting-item setting-item-about">
+        <span class="about-version" id="about-version">TodoStickyNote v1.1.1</span>
       </div>
     </div>
   </div>

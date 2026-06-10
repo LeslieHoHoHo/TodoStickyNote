@@ -13,6 +13,7 @@ const store = new ElectronStore({
       theme: 'system',
       fontSize: 14,
       autoDeleteDays: 30,
+      defaultDueDate: 'none',
       language: 'system'
     },
     windowBounds: { x: undefined, y: undefined, width: 350, height: 500 }
@@ -161,7 +162,7 @@ ipcMain.handle('save-todos', (event, todos) => {
 
 // IPC: 获取设置
 ipcMain.handle('get-settings', () => {
-  return store.get('settings', { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, language: 'system' });
+  return store.get('settings', { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, language: 'system', defaultDueDate: 'none' });
 });
 
 // IPC: 保存设置

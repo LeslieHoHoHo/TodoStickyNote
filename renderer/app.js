@@ -25,6 +25,7 @@ const btnExport = document.getElementById('btn-export');
 const autoDeleteSelect = document.getElementById('auto-delete-select');
 const sortBySelect = document.getElementById('sort-by-select');
 const languageSelect = document.getElementById('language-select');
+const defaultDueDateSelect = document.getElementById('default-due-date-select');
 const importModalOverlay = document.getElementById('import-modal-overlay');
 const importTextarea = document.getElementById('import-textarea');
 const btnImportFromFile = document.getElementById('btn-import-from-file');
@@ -34,7 +35,7 @@ const pinBtn = document.getElementById('btn-pin');
 
 // ===== 数据 =====
 let todos = [];
-let settings = { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, sortBy: 'createdAt', language: 'system' };
+let settings = { autoLaunch: false, alwaysOnTop: true, opacity: 0.75, theme: 'system', fontSize: 14, autoDeleteDays: 0, sortBy: 'createdAt', language: 'system', defaultDueDate: 'none' };
 
 // ===== i18n =====
 const locales = { 'zh-CN': zhCN, 'en': en };
@@ -114,6 +115,12 @@ function applyLocale() {
   sortBySelect.options[0].textContent = t('sortByCreatedAt');
   sortBySelect.options[1].textContent = t('sortByDueDate');
 
+  // 默认截止日期下拉框
+  defaultDueDateSelect.options[0].textContent = t('defaultDueDateNone');
+  defaultDueDateSelect.options[1].textContent = t('defaultDueDateToday');
+  defaultDueDateSelect.options[2].textContent = t('defaultDueDateWeek');
+  defaultDueDateSelect.options[3].textContent = t('defaultDueDateMonth');
+
   // 自动清理下拉框
   autoDeleteSelect.options[0].textContent = t('autoDeleteNever');
   autoDeleteSelect.options[1].textContent = t('autoDeleteDays', { days: 7 });
@@ -128,6 +135,9 @@ function applyLocale() {
 
   // 导出按钮
   btnExport.textContent = t('exportData');
+
+  // 关于版本号
+  document.getElementById('about-version').textContent = t('aboutVersion', { version: '1.1.2' });
 
   // 模态框
   document.querySelector('.modal-title').textContent = t('modalTitle');
@@ -169,6 +179,27 @@ function formatDate(dateStr) {
   if (!dateStr) return '';
   const parts = dateStr.split('-');
   return `${parts[1]}-${parts[2]}`;
+}
+
+/**
+ * 根据 defaultDueDate 设置计算默认截止日期
+ * @returns {string|null} YYYY-MM-DD 格式日期，或 null
+ */
+function calcDefaultDueDate() {
+  const preset = settings.defaultDueDate || 'none';
+  if (preset === 'none') return null;
+  const d = new Date();
+  if (preset === 'today') {
+    // 当天
+  } else if (preset === 'week') {
+    d.setDate(d.getDate() + 7);
+  } else if (preset === 'month') {
+    d.setDate(d.getDate() + 30);
+  }
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function isOverdue(dueDateStr) {
@@ -223,6 +254,10 @@ async function init() {
   // 初始化排序方式
   const sortBy = settings.sortBy || 'createdAt';
   sortBySelect.value = sortBy;
+
+  // 初始化默认截止日期
+  const defaultDueDate = settings.defaultDueDate || 'none';
+  defaultDueDateSelect.value = defaultDueDate;
 
   // 初始化语言
   const language = settings.language || 'system';
@@ -316,6 +351,12 @@ function bindEvents() {
     renderList();
   });
 
+  // 默认截止日期下拉框
+  defaultDueDateSelect.addEventListener('change', async () => {
+    settings.defaultDueDate = defaultDueDateSelect.value;
+    await window.electronAPI.saveSettings(settings);
+  });
+
   // 语言下拉框
   languageSelect.addEventListener('change', async () => {
     settings.language = languageSelect.value;
@@ -373,7 +414,7 @@ function bindEvents() {
         id: generateId(),
         content: cleaned,
         createdAt: Date.now(),
-        dueDate: null,
+        dueDate: calcDefaultDueDate(),
         completed: false,
         completedAt: null
       };
@@ -400,7 +441,7 @@ function addTodoFromInput() {
     id: generateId(),
     content: content,
     createdAt: Date.now(),
-    dueDate: null,
+    dueDate: calcDefaultDueDate(),
     completed: false,
     completedAt: null
   };

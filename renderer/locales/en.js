@@ -36,6 +36,11 @@ const en = {
   sortBy: 'Sort By',
   sortByCreatedAt: 'Creation Time',
   sortByDueDate: 'Due Date',
+  defaultDueDate: 'Default Due Date',
+  defaultDueDateNone: 'No Due Date',
+  defaultDueDateToday: 'Today',
+  defaultDueDateWeek: '1 Week Later',
+  defaultDueDateMonth: '1 Month Later',
   autoDelete: 'Auto-delete Done',
   autoDeleteNever: 'Never',
   autoDeleteDays: '{days} days',
@@ -67,5 +72,8 @@ const en = {
   importDialogTitle: 'Import Todos',
   textFile: 'Text Files',
   exportDialogTitle: 'Export Todo Data',
-  exportDefaultName: 'todo-data'
+  exportDefaultName: 'todo-data',
+
+  // About
+  aboutVersion: 'TodoStickyNote v{version}'
 };
